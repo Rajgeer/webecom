@@ -13,8 +13,7 @@ function UserLayout ({children}) {
       return(
         <>
           <Navbar token={token} />
-          {layout}
-          {children}
+           {children}
           {/* <Footer /> */}
         </> 
       )

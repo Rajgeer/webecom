@@ -1,6 +1,7 @@
 import React from 'react';
 
 const CartItem = ({ item, removeFromCart }) => {
+  console.log({cartItem:item})
   return (
     <div className="flex justify-between items-center p-2 border-b">
       <div>

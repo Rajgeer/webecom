@@ -1,52 +1,91 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { useSelector } from 'react-redux';
 export const BASE_URL = 'http://localhost:5000';
 
-const baseQuery = fetchBaseQuery({
-    baseUrl:`${BASE_URL}/api/v1`,
-    credentials: 'include',
-    prepareHeaders: (headers) => {
-        const token = window.localStorage.get('token');
-        if(token){
-           headers.set('Authorization', `Bearer ${token}`)
+export const apiSlice = createApi({
+    reducerPath:'api',
+    baseQuery:fetchBaseQuery({
+        baseUrl:BASE_URL,
+        prepareHeaders(headers, { getState }){
+            const token = getState().auth.token;
+            if(token){
+                headers.set('Authorization', `Bearer ${token}`);
+            }
+            // headers.set('x-api-key', API_KEY);
+            return headers;
         }
-       return headers;
+    }),
+    endpoints(builder){
+        return {
+            
+            login:builder.mutation({
+                query(data){
+                    return {
+                        url: '/api/auth/login',
+                        method: 'POST',
+                        body: data,
+                    }
+                }
+            }),
+            register:builder.mutation({
+                query(data){
+                    return{
+                        url:'/api/auth/register',
+                        method:'POST',
+                        body: data,
+                    }
+                }
+            }),
+            createProduct:builder.mutation({
+                query(data){
+                    return{
+                        url:'/api/products',
+                        method:'POST',
+                        body:data
+                    }
+                }
+            }),
+            fetchProducts:builder.query({
+                query(){
+                    return `/api/products`
+                }
+            }),
+            createOrder:builder.mutation({
+                query(data){
+                    return{
+                        url:'/api/orders',
+                        method:'POST',
+                        data:data
+                    }
+                }
+            }),
+            fetchOrders:builder.query({
+                query(){
+                    return `/api/orders`
+                }
+            }),
+            myOrders:builder.query({
+                query(){
+                    return '/api/orders/myorders'
+                }
+            }),
+            fetchOrderById:builder.query({
+                query(id){
+                    return `/api/orders/${id}`
+                }
+            }), 
+        }
     }
 });
 
-const baseQueryWithReauth = async (args, api, extraOptions) => {
-    // console.log('Run Base query with Reauth');
-    await mutex.waitForUnlock();
-    let result = await baseQuery(args, api, extraOptions);
-    if(result?.error?.originalStatus === 401){
-        if (!mutex.isLocked()) {
-            const release = await mutex.acquire();
-            try {
-                const refreshResult = await baseQuery('/user/refresh-token', api, extraOptions); 
-                if (refreshResult?.data) {
-                    // store the new token
-                    const user = api.getState().auth.user;
-                    const { data } = refreshResult.data;
-                    api.dispatch(setCredentials({user: user, token:data?.refreshToken}))
-                    // api.dispatch(setToken({token: data?.refreshToken}));
-                    // api.dispatch(setCredentials({user}))
-                    // retry the original query with the new access token
-                    result = await baseQuery(args, api, extraOptions);
-                } else {
-                    // logout or handle refresh token error
-                    await baseQuery('/user/logout', api, extraOptions);
-                    api.dispatch(logOut());
-                }
-            } finally {
-                release();
-            }
-        }else {
-            result = await baseQuery(args, api, extraOptions);
-        }
-    }
-    return result;
-}
-export const apiSlice = createApi({
-    baseQuery:baseQueryWithReauth,
-    endpoints:(builder) => (builder)
-})
+export const { 
+    useLoginMutation,
+    useRegisterMutation,
+    useCreateProductMutation,
+    useFetchProductsQuery,
+    useFetchOrdersQuery,
+    useMyOrdersQuery,
+    useFetchOrderByIdQuery,
+    useCreateOrderMutation
+
+} = apiSlice;
+

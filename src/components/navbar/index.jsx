@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import { logout, selectCurrentToken } from '../../features/authSlice';
+import Button from '../Button';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-
+  const dispath = useAppDispatch();
+  const token = useAppSelector(selectCurrentToken);
   // Handle scroll for shadow
   useEffect(() => {
     const handleScroll = () => {
@@ -13,7 +16,6 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   // Close mobile menu on route change
   const closeMobileMenu = () => setIsOpen(false);
 
@@ -71,6 +73,43 @@ const Navbar = () => {
               >
                 Contact
               </NavLink>
+              {token?(<Button
+                variant='primary'
+                size='medium'
+                onClick={() => dispath(logout())}
+                className={({ isActive }) => 
+                  `px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive 
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-700 hover:text-white'
+                  }`
+                }
+              >Logout</Button>):(<>
+              <NavLink
+                to="/login"
+                className={({ isActive }) => 
+                  `px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive 
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-700 hover:text-white'
+                  }`
+                }
+              >
+                Login
+              </NavLink>
+              <NavLink
+                to="/register"
+                className={({ isActive }) => 
+                  `px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive 
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-700 hover:text-white'
+                  }`
+                }
+              >
+                Register
+              </NavLink>
+              </>)}
             </div>
           </div>
 
